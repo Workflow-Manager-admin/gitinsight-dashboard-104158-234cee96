@@ -1,29 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useGitHub } from "../../hooks/github-api";
 
 // PUBLIC_INTERFACE
-export default function RepositoryAnalytics({ api, user }) {
-  const [repos, setRepos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    setLoading(true);
-    setError("");
-    if (!user) {
-      setRepos([]);
-      setLoading(false);
-      return;
-    }
-    // Placeholder async fetch
-    setTimeout(() => {
-      // Replace with fetch("/api/repos")...
-      setRepos([
-        { name: "gitinsight-dashboard", stars: 12, forks: 2, issues: 0 },
-        { name: "my-utils", stars: 2, forks: 0, issues: 1 },
-      ]);
-      setLoading(false);
-    }, 800);
-  }, [user]);
+export default function RepositoryAnalytics() {
+  const { repoData, refetchRepos } = useGitHub();
+  const { loading, error, data: repos } = repoData || {};
 
   return (
     <section>
@@ -44,10 +25,20 @@ export default function RepositoryAnalytics({ api, user }) {
         <span style={{ color: "#aaa", fontSize: 13 }}>
           {loading || error
             ? null
-            : repos.length
+            : repos && repos.length
             ? "Your repositories listed below."
             : "No repositories found."}
         </span>
+      </div>
+      <div style={{marginBottom: 16}}>
+        <button
+          className="btn"
+          style={{ fontSize: 13, background: "#28a745", color: "#fff", marginRight: 6 }}
+          onClick={refetchRepos}
+          disabled={!!loading}
+        >
+          {loading ? "Refreshing..." : "Refresh List"}
+        </button>
       </div>
       {loading ? (
         <div
@@ -75,9 +66,10 @@ export default function RepositoryAnalytics({ api, user }) {
             fontStyle: "italic",
           }}
         >
-          Failed to fetch repositories.
+          Failed to fetch repositories.<br/>
+          <code style={{color: "#e14545", fontSize: 13}}>{error}</code>
         </div>
-      ) : repos.length === 0 ? (
+      ) : !repos || repos.length === 0 ? (
         <div
           style={{
             border: "1.5px solid #e0e0e0",
