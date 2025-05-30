@@ -1,32 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import DashboardCard from "./DashboardCard";
+import { useGitHub } from "../../hooks/github-api";
 
 // PUBLIC_INTERFACE
-export default function DashboardMain({ api, user }) {
-  // UI State
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  // Mimic fetch on mount
-  useEffect(() => {
-    setLoading(true);
-    setError("");
-    if (!user) {
-      setStats(null);
-      setLoading(false);
-      return;
-    }
-    // Placeholder: Simulate API call
-    setTimeout(() => {
-      // Example: set to dummy stats, replace with real fetch in future
-      setStats({
-        totalRepos: 7,
-        totalCommits: 124,
-        weeklyActive: 4,
+export default function DashboardMain() {
+  const { repoData, commitsData } = useGitHub();
+  const {
+    loading: repoLoading,
+    error: repoError,
+    data: repos,
+  } = repoData || {};
+  const {
+    loading: commitLoading,
+    error: commitError,
+    data: commits,
+  } = commitsData || {};
+
+  const loading = repoLoading || commitLoading;
+  const error = repoError || commitError;
+
+  // Compute stats
+  let stats = null;
+  if (repos && Array.isArray(repos)) {
+    // Count repos
+    const totalRepos = repos.length;
+    // Aggregate commit count from fetched commit list
+    const totalCommits = commits ? commits.length : "--";
+    // Find how many repos active in last 7 days
+    let activeRepos = 0;
+    if (commits && Array.isArray(commits)) {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const actives = {};
+      commits.forEach(cm => {
+        if (!cm.repo || !cm.date) return;
+        const cmDate = new Date(cm.date);
+        if (cmDate >= weekAgo) actives[cm.repo] = true;
       });
-      setLoading(false);
-    }, 700);
-  }, [user]);
+      activeRepos = Object.keys(actives).length;
+    }
+    stats = { totalRepos, totalCommits, weeklyActive: activeRepos };
+  }
+
   return (
     <section>
       <div style={{ display: "flex", gap: 32, flexWrap: "wrap", marginBottom: 32 }}>
