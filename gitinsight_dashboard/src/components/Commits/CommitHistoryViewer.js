@@ -1,37 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useGitHub } from "../../hooks/github-api";
 
 // PUBLIC_INTERFACE
-export default function CommitHistoryViewer({ api, user }) {
-  const [commits, setCommits] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    setLoading(true);
-    setError("");
-    if (!user) {
-      setCommits([]);
-      setLoading(false);
-      return;
-    }
-    // Placeholder async fetch
-    setTimeout(() => {
-      // Replace with actual data fetch
-      setCommits([
-        {
-          message: "Initial commit",
-          repo: "gitinsight-dashboard",
-          date: "2024-04-10",
-        },
-        {
-          message: "Add OAuth",
-          repo: "gitinsight-dashboard",
-          date: "2024-04-12",
-        },
-      ]);
-      setLoading(false);
-    }, 900);
-  }, [user]);
+export default function CommitHistoryViewer() {
+  const { commitsData, refetchCommits } = useGitHub();
+  const { loading, error, data: commits } = commitsData || {};
 
   return (
     <section>
@@ -52,18 +25,29 @@ export default function CommitHistoryViewer({ api, user }) {
         <span style={{ color: "#aaa", fontSize: 13 }}>
           {loading || error
             ? null
-            : commits.length
+            : commits && commits.length
             ? "Your recent commits."
             : "No commit history."}
         </span>
+      </div>
+      <div style={{marginBottom: 12}}>
+        <button
+          className="btn"
+          style={{ fontSize: 13, background: "#2b9c47", color: "#fff", marginRight: 6 }}
+          onClick={refetchCommits}
+          disabled={!!loading}
+        >
+          {loading ? "Refreshing..." : "Refresh Commits"}
+        </button>
       </div>
       {loading ? (
         <div className="dashboard-card">Loading commit history...</div>
       ) : error ? (
         <div className="dashboard-card" style={{ color: "#e14545" }}>
-          Failed to fetch commit history.
+          Failed to fetch commit history.<br/>
+          <code style={{color: "#e14545", fontSize: 13}}>{error}</code>
         </div>
-      ) : commits.length === 0 ? (
+      ) : !commits || commits.length === 0 ? (
         <div className="dashboard-card" style={{ color: "#aaa" }}>
           No commits found.
         </div>
