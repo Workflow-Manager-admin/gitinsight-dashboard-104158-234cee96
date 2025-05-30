@@ -170,4 +170,3 @@ export function GitHubProvider({ user, accessToken, children }) {
 // PUBLIC_INTERFACE
 export const useGitHub = () => useContext(GitHubContext);
 
->>>>>>> REPLACE
