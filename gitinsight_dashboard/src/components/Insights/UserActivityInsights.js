@@ -1,29 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useGitHub } from "../../hooks/github-api";
 
 // PUBLIC_INTERFACE
-export default function UserActivityInsights({ api, user }) {
-  const [insights, setInsights] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    setLoading(true);
-    setError("");
-    if (!user) {
-      setInsights(null);
-      setLoading(false);
-      return;
-    }
-    // Placeholder async fetch
-    setTimeout(() => {
-      // Replace with data from "/api/insights"
-      setInsights({
-        mostActiveDay: "Wednesday",
-        topRepo: "gitinsight-dashboard",
-        streak: 12,
-      });
-      setLoading(false);
-    }, 500);
-  }, [user]);
+export default function UserActivityInsights() {
+  const { insightsData, refetchInsights } = useGitHub();
+  const { loading, error, data: insights } = insightsData || {};
+
   return (
     <section>
       <h2
@@ -43,6 +25,16 @@ export default function UserActivityInsights({ api, user }) {
         <span style={{ color: "#aaa", fontSize: 13 }}>
           {loading || error ? null : insights ? "Personal trends below." : ""}
         </span>
+      </div>
+      <div style={{marginBottom: 10}}>
+        <button
+          className="btn"
+          style={{ fontSize: 13, background: "#24292e", color: "#fff", marginRight: 6 }}
+          onClick={refetchInsights}
+          disabled={!!loading}
+        >
+          {loading ? "Refreshing..." : "Refresh Insights"}
+        </button>
       </div>
       {loading ? (
         <div
@@ -70,7 +62,8 @@ export default function UserActivityInsights({ api, user }) {
             fontStyle: "italic",
           }}
         >
-          Failed to fetch insights.
+          Failed to fetch insights.<br/>
+          <code style={{color: "#e14545", fontSize: 13}}>{error}</code>
         </div>
       ) : insights ? (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 28 }}>
