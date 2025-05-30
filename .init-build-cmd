@@ -1,0 +1,4 @@
+{
+    "command": "npm install && npx tsc --noEmit && npm test -- --ci",
+    "working_directory": "/home/kavia/workspace/code-generation/gitinsight-dashboard-104158-234cee96/gitinsight_dashboard"
+}
