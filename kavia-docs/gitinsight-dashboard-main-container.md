@@ -119,4 +119,3 @@ The design emphasizes clarity, clean separation of navigation and content, and u
 
 ---
 
-This documentation may be updated as new features or architectural changes are introduced.
